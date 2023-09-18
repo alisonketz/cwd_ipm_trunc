@@ -9,7 +9,7 @@
 
 rm(list = ls())
 
-setwd("~/Documents/ipm/truncated_joint_survival_foi")
+setwd("~/Documents/ipm/cwd_ipm_trunc")
 
 library(viridis)
 library(RColorBrewer)
@@ -78,8 +78,7 @@ source("07_format_data_survival.R")
 ### Setup collar data for FOI + Survival
 ##########################################################
 
-# source("08_format_data_combine_foi_surv.R")
-source("08_format_data_combine_foi_surv_trunc.R")
+source("08_format_data_combine_foi_surv.R")
 
 ##########################################################
 ### Setup collar data for FOI + Survival
@@ -91,21 +90,16 @@ source("09_format_data_cause.R")
 ### Setup consts etc for running the model
 ###########################################################
 
-# source("10_prelim_survival.R")
-source("10_prelim_survival_K.R")
+source("10_prelim_survival.R")
 source("11_prelim_foi.R")
-# source("12_prelim_aah.R")
-source("12_prelim_aah_trunc.R")
-
+source("12_prelim_aah.R")
 
 ###########################################################
 ### Likelihoods
 ###########################################################
 
 source("13_distributions_check.R")
-# source("13_distributions.R")
-# source("13_distributions_hunt.R")
-source("13_distributions_trunc.R")
+source("13_distributions.R")
 
 ###########################################################
 ### Functions for Efficient Calculations
@@ -117,24 +111,17 @@ source("14_calculations.R")
 ### Run model
 ###########################################################
 
-# source("15_modelcode.R")
-source("15_modelcode_K.R")
-# source("15_modelcode_K_hh.R")
+source("15_modelcode.R")
 
 ###########################################################
 ### Run model
 ###########################################################
 
-# source("16_run_model.R")
-source("16_run_model_K.R")
-# source("16_run_model_K_hh.R")
-
-# source("17_run_model_par.R")
-# source("17_run_model_par_fun.R")
+source("16_run_model.R")
+# source("16_run_model_par.R")
 
 ###########################################################
 ### Post processing
 ###########################################################
 
-# source("17_post_process.R")
-source("17_post_process_K.R")
+source("17_post_process.R")
