@@ -351,14 +351,14 @@ calc_infect_prob <- nimbleFunction(
                  n_agef = double(0),
                  n_agem = double(0),
                  yr_start_age = double(1),
-                 yr_start_pop = double(1),
+                #  yr_start_pop = double(1),
                  f_age = double(1),
                  m_age = double(1),
-                 f_period = double(1),
-                 m_period = double(1),
-                 nT_period = double(0),
-                 period_lookup_foi_study = double(1),
-                 n_year = double(0),
+                #  f_period = double(1),
+                #  m_period = double(1),
+                #  nT_period = double(0),
+                #  period_lookup_foi_study = double(1),
+                #  n_year = double(0),
                  n_sex = double(0),
                  n_study_area = double(0),
                  space = double(0),
@@ -367,58 +367,43 @@ calc_infect_prob <- nimbleFunction(
 
     gam <- nimArray(value = 0, c(n_study_area,
                                  n_sex,
-                                 nT_age_surv_aah_f,
-                                 nT_period))
+                                 nT_age_surv_aah_f))
     p_inf <- nimArray(value = 0, c(n_study_area,
                                    n_sex,
-                                   n_agef,
-                                   n_year))
+                                   n_agef))
 
-    for (t in 1:nT_period) {
-        for (i in 1:nT_age_surv_aah_f) {
-            ### Female
-            ### East
-            gam[1, 1, i, t] <- exp(f_age[age_lookup_f[i]] +
-                               f_period[period_lookup_foi_study[t]])
-            ### West
-            gam[2, 1, i, t] <- exp(f_age[age_lookup_f[i]] +
-                               f_period[period_lookup_foi_study[t]] +
-                               space)
+    for (i in 1:nT_age_surv_aah_f) {
+        ### Female
+        ### East
+        gam[1, 1, i] <- exp(f_age[age_lookup_f[i]])
+        ### West
+        gam[2, 1, i] <- exp(f_age[age_lookup_f[i]] +
+                            space)
 
-        }
-        for (i in 1:nT_age_surv_aah_m) {
-            ### Male
-            ### East
-            gam[1, 2, i, t] <- exp(m_age[age_lookup_m[i]] +
-                               m_period[period_lookup_foi_study[t]])
-            ### West
-            gam[2, 2, i, t] <- exp(m_age[age_lookup_m[i]] +
-                               m_period[period_lookup_foi_study[t]] +
-                               space)
-        }
     }
+    for (i in 1:nT_age_surv_aah_m) {
+        ### Male
+        ### East
+        gam[1, 2, i] <- exp(m_age[age_lookup_m[i]])
+        ### West
+        gam[2, 2, i] <- exp(m_age[age_lookup_m[i]] +
+                            space)
+    }
+
    # infection probability all ages all years 
     for(k in 1:n_study_area) {
-        for (t in 1:n_year) {
-            for (a in 1:n_agef) {
-                p_inf[k, 1, a, t] <- 
-                    1 - exp(-sum(diag(gam[k,
-                                          1,
-                                          yr_start_age[a]:(yr_start_age[a] + 51),
-                                          yr_start_pop[t]:(yr_start_pop[t] + 51)])))
-            }
-            for (a in 1:n_agem) {
-                p_inf[k, 2, a, t] <- 
-                    1 - exp(-sum(diag(gam[k,
-                                          2,
-                                          yr_start_age[a]:(yr_start_age[a] + 51),
-                                          yr_start_pop[t]:(yr_start_pop[t] + 51)])))
-            }
+        for (a in 1:n_agef) {
+            p_inf[k, 1, a] <- 
+                1 - exp(-sum(gam[k,1,yr_start_age[a]:(yr_start_age[a] + 51)]))
+        }
+        for (a in 1:n_agem) {
+            p_inf[k, 2, a] <- 
+                1 - exp(-sum(gam[k,2,yr_start_age[a]:(yr_start_age[a] + 51)]))
         }
     }
 
-    returnType(double(4))
-    return(p_inf[1:n_study_area, 1:n_sex, 1:n_agef, 1:n_year])
+    returnType(double(3))
+    return(p_inf[1:n_study_area, 1:n_sex, 1:n_agef])
   })
 
 Ccalc_infect_prob <- compileNimble(calc_infect_prob)
@@ -537,7 +522,7 @@ calc_infect_prob_hunt <- nimbleFunction(
                 p_inf[k, 2, a, t] <- 
                     (1 - exp(-sum(diag(gam[k,
                                            2,
-                                           yr_start_age[a]:(yr_start[a] + length(yr_start_pop[t]:ng_end[t]) - 1),
+                                           yr_start_age[a]:(yr_start_age[a] + length(yr_start_pop[t]:ng_end[t]) - 1),
                                            yr_start_pop[t]:ng_end[t]])))) * calibration_transition
             }
         }
