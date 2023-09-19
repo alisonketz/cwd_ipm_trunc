@@ -1,3 +1,19 @@
+######################################################################################
+###
+### Preliminary constants for running in the model
+###
+######################################################################################
+
+### Number of age effects for survival
+nT_age_surv <- max(d_surv$right_age_s, na.rm = TRUE) - 1
+nT_age_surv_aah_f <- intvl_step_yr_weekly * n_agef + 2
+nT_age_short_f <- intvl_step_yr_weekly * (n_agef - 1) + 2
+nT_age_surv_aah_m <- intvl_step_yr_weekly * n_agem + 1 
+nT_age_short_m <- intvl_step_yr_weekly * (n_agem - 1) + 1
+### adding 1 and 2 to account for the fact that deer that live 
+### to the 9 or 7 years or older actually live more than
+### 52 weeks in a year, due to leap years and timing of weeks beginning into end
+
 ###############################################################
 ###
 ### Formatting data to fit the conditional probability that 
@@ -86,7 +102,7 @@ for (i in 1:n_year_collar) {
         d_huntseason$SeasonType == "nineday"]) / weeks(1))
 }
 
-table(d_fit_hh$right_period_s[d_fit_hh$mort_h==1])
+# table(d_fit_hh$right_period_s[d_fit_hh$mort_h==1])
 startgun[1] <- 45
 endgun[1] <- 46
 
@@ -273,12 +289,10 @@ pop_study_origin  <- "2017-05-15"
 pop_study_start <- ceiling(interval(study_origin,pop_study_origin) / weeks(1))
 pop_study_start #begin to calculate annual survival from the 19th week of the collar study
 
-d_fit_season
 d_fit_season_pop <- d_fit_season + pop_study_start
 d_fit_season_pop$year  <- d_fit_season$year
-d_fit_season_pop
 
-yr_start_age = seq(1,nT_age,by=52)
+yr_start_age <- seq(1,nT_age_surv, by = 52)
 
 ################################################################
 ###

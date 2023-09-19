@@ -1,21 +1,3 @@
-
-
-######################################################################################
-###
-### Preliminary constants for running in the model
-###
-######################################################################################
-
-### Number of age effects for survival
-nT_age_surv <- max(d_surv$right_age_s, na.rm = TRUE) - 1
-nT_age_surv_aah_f <- intvl_step_yr_weekly * n_agef + 2
-nT_age_short_f <- intvl_step_yr_weekly * (n_agef - 1) + 2
-nT_age_surv_aah_m <- intvl_step_yr_weekly * n_agem + 1 
-nT_age_short_m <- intvl_step_yr_weekly * (n_agem - 1) + 1
-### adding 1 and 2 to account for the fact that deer that live 
-### to the 9 or 7 years or older actually live more than
-### 52 weeks in a year, due to leap years and timing of weeks beginning into end
-
 ########################################################################
 ### matrix with indexes for averaging period effects from collar data
 ### to account for within year annual variation when 
@@ -23,13 +5,13 @@ nT_age_short_m <- intvl_step_yr_weekly * (n_agem - 1) + 1
 ########################################################################
 
 # interval("2016-05-15","2017-01-09") %/% weeks(1)
-indx_mat_pe_surv <- matrix(NA, nrow = 6, ncol = 52)
-indx_mat_pe_surv[1, 35:52] <- 1:18
-indx_mat_pe_surv[2,] <- 19:(19 + 52 - 1)
-indx_mat_pe_surv[3,] <- (19 + 52):(19 + 2 * 52 - 1)
-indx_mat_pe_surv[4,] <- (19 + 2 * 52):(19 + 3 * 52 - 1)
-indx_mat_pe_surv[5,] <- (19 + 3 * 52):(19 + 4 * 52 - 1)
-indx_mat_pe_surv[6,] <- (19 + 4 * 52):(19 + 5 * 52 - 1)
+# indx_mat_pe_surv <- matrix(NA, nrow = 6, ncol = 52)
+# indx_mat_pe_surv[1, 35:52] <- 1:18
+# indx_mat_pe_surv[2,] <- 19:(19 + 52 - 1)
+# indx_mat_pe_surv[3,] <- (19 + 52):(19 + 2 * 52 - 1)
+# indx_mat_pe_surv[4,] <- (19 + 2 * 52):(19 + 3 * 52 - 1)
+# indx_mat_pe_surv[5,] <- (19 + 3 * 52):(19 + 4 * 52 - 1)
+# indx_mat_pe_surv[6,] <- (19 + 4 * 52):(19 + 5 * 52 - 1)
 
 ########################################################################
 ### calibrating age of deer with the study time 
@@ -254,44 +236,44 @@ nknots_age <- dim(Z_age)[2]
 ###
 #################################################################
 
-kernel_conv <- nimbleFunction(
-  run = function(nT = double(0),
-                 Z = double(2),
-                 stauk = double(0),
-                 nconst = double(0),
-                 tauk = double(0),
-                 nknots = double(0),
-                 alphau = double(1)
-  ){
-    temp <- nimMatrix(value = 0, nrow = nT, ncol = nknots)
-    temp1 <- nimMatrix(value = 0, nrow = nT, ncol = nknots)
-    temp2 <- nimNumeric(nknots)
-    KA <- nimNumeric(nT)
+# kernel_conv <- nimbleFunction(
+#   run = function(nT = double(0),
+#                  Z = double(2),
+#                  stauk = double(0),
+#                  nconst = double(0),
+#                  tauk = double(0),
+#                  nknots = double(0),
+#                  alphau = double(1)
+#   ){
+#     temp <- nimMatrix(value = 0, nrow = nT, ncol = nknots)
+#     temp1 <- nimMatrix(value = 0, nrow = nT, ncol = nknots)
+#     temp2 <- nimNumeric(nknots)
+#     KA <- nimNumeric(nT)
 
-    for (i in 1:nT) {
-      for (j in 1:nknots) {
-        temp1[i, j] <- stauk * nconst * exp(-0.5 * Z[i, j]^2 * tauk)
-      }
-    }
+#     for (i in 1:nT) {
+#       for (j in 1:nknots) {
+#         temp1[i, j] <- stauk * nconst * exp(-0.5 * Z[i, j]^2 * tauk)
+#       }
+#     }
 
-    for (j in 1:nknots) {
-      temp2[j] <- sum(temp1[1:nT, j])
-    }
+#     for (j in 1:nknots) {
+#       temp2[j] <- sum(temp1[1:nT, j])
+#     }
 
-    for (i in 1:nT) {
-      for (j in 1:nknots) {
-        temp[i, j] <- (temp1[i, j] / temp2[j]) * alphau[j]
-      }
-      KA[i] <- sum(temp[i, 1:nknots])
-    }
-    muKA <- mean(KA[1:nT])
-    KA[1:nT] <- KA[1:nT] - muKA
+#     for (i in 1:nT) {
+#       for (j in 1:nknots) {
+#         temp[i, j] <- (temp1[i, j] / temp2[j]) * alphau[j]
+#       }
+#       KA[i] <- sum(temp[i, 1:nknots])
+#     }
+#     muKA <- mean(KA[1:nT])
+#     KA[1:nT] <- KA[1:nT] - muKA
 
-    returnType(double(1))
-    return(KA[1:nT])
-  })
+#     returnType(double(1))
+#     return(KA[1:nT])
+#   })
 
-Ckernel_conv <- compileNimble(kernel_conv)
+# Ckernel_conv <- compileNimble(kernel_conv)
 
 
 #########################################

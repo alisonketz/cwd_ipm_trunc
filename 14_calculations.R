@@ -102,14 +102,14 @@ Ccalc_surv_aah <- compileNimble(calc_surv_aah)
 #     nT_age_short_m = nT_age_short_m,
 #     nT_age_surv_aah_f = nT_age_surv_aah_f,
 #     nT_age_surv_aah_m = nT_age_surv_aah_m,
-#     # beta0 = beta0_survival_sus+2.3,
-#     beta0 = mean(beta0_survival_sus),
-#     # beta_male = beta_male,
-#     beta_male = mean(beta_male),
-#     # age_effect = age_effect_survival_test,        # length = 962
-#     age_effect = apply(age_effect_survival,2,mean),        # length = 962
-#     period_effect = apply(period_effect_survival,2,mean), 
-#     # period_effect = period_effect_survival_test[(nT_period_prestudy_ext + 1):(nT_period_overall_ext)], 
+#     beta0 = beta0_survival_sus,
+#     # beta0 = mean(beta0_survival_sus),
+#     beta_male = beta_male,
+#     # beta_male = mean(beta_male),
+#     age_effect = age_effect_survival_test,        # length = 962
+#     # age_effect = apply(age_effect_survival,2,mean),        # length = 962
+#     # period_effect = apply(period_effect_survival,2,mean), 
+#     period_effect = period_effect_survival_test[(nT_period_precollar_ext + 1):(nT_period_overall_ext)], 
 # 	yr_start_age = yr_start_age,
 #     yr_start_pop = d_fit_season_pop$yr_start,
 #     n_year = n_year,
@@ -304,7 +304,6 @@ Ccalc_surv_harvest <- compileNimble(calc_surv_harvest)
 
 assign("calc_surv_harvest", calc_surv_harvest, envir = .GlobalEnv)
 
-# starttime <- Sys.time()
 # sh_sus <- calc_surv_harvest(
 #         nT_age = nT_age_surv,
 #         nT_period = nT_period_collar,
@@ -316,13 +315,14 @@ assign("calc_surv_harvest", calc_surv_harvest, envir = .GlobalEnv)
 #         beta_male = beta_male,
 #         age_effect = age_effect_survival_test,
 #         period_effect = period_effect_survival_test[(nT_period_prestudy_ext + 1):(nT_period_overall_ext)], 
+#         n_sex = n_sex,
 #         n_year = n_year,
 #         n_agef = n_agef,
 #         n_agem = n_agem,
-#         ng_start = d_fit_season$ng_start,
-#         gun_start = d_fit_season$gun_start,
-#         gun_end = d_fit_season$gun_end,
-#         ng_end = d_fit_season$ng_end,
+#         ng_start = d_fit_season_pop$ng_start,
+#         gun_start = d_fit_season_pop$gun_start,
+#         gun_end = d_fit_season_pop$gun_end,
+#         ng_end = d_fit_season_pop$ng_end,
 # 	yr_start_age = yr_start_age,
 #     yr_start_pop = d_fit_season_pop$yr_start,
 #         p_nogun_f = .55,
@@ -461,10 +461,10 @@ calc_infect_prob_hunt <- nimbleFunction(
                  ng_end = double(1),
                  f_age = double(1),
                  m_age = double(1),
-                 f_period = double(1),
-                 m_period = double(1),
-                 nT_period = double(0),
-                 period_lookup_foi_study = double(1),
+                #  f_period = double(1),
+                #  m_period = double(1),
+                #  nT_period = double(0),
+                #  period_lookup_foi_study = double(1),
                  n_year = double(0),
                  n_sex = double(0),
                  n_study_area = double(0),
@@ -475,38 +475,29 @@ calc_infect_prob_hunt <- nimbleFunction(
 
     gam <- nimArray(value = 0, c(n_study_area,
                                  n_sex,
-                                 nT_age_surv_aah_f,
-                                 nT_period))
+                                 nT_age_surv_aah_f))
     p_inf <- nimArray(value = 0, c(n_study_area,
                                    n_sex,
                                    n_agef,
                                    n_year))
 
-    for (t in 1:nT_period) {
-        for (i in 1:nT_age_surv_aah_f) {
-            ### Female
-            ### East
-            gam[1, 1, i, t] <- exp(f_age[age_lookup_f[i]] +
-                               f_period[period_lookup_foi_study[t]])
-            ### West
-            gam[2, 1, i, t] <- exp(f_age[age_lookup_f[i]] +
-                               f_period[period_lookup_foi_study[t]] +
-                               space)
-
-        }
-        for (i in 1:nT_age_surv_aah_m) {
-            ### Male
-            ### East
-            gam[1, 2, i, t] <- exp(m_age[age_lookup_m[i]] +
-                               m_period[period_lookup_foi_study[t]])
-            ### West
-            gam[2, 2, i, t] <- exp(m_age[age_lookup_m[i]] +
-                               m_period[period_lookup_foi_study[t]] +
-                               space)
-        }
+    for (i in 1:nT_age_surv_aah_f) {
+        ### Female
+        ### East
+        gam[1, 1, i] <- exp(f_age[age_lookup_f[i]])
+                    ### West
+        gam[2, 1, i] <- exp(f_age[age_lookup_f[i]] +
+                            space)
 
     }
-
+    for (i in 1:nT_age_surv_aah_m) {
+        ### Male
+        ### East
+        gam[1, 2, i] <- exp(m_age[age_lookup_m[i]])
+        ### West
+        gam[2, 2, i] <- exp(m_age[age_lookup_m[i]] +
+                            space)
+    }
     #Probability of getting infected with CWD
     for(k in 1:n_study_area) {
         # infection probability all ages all years 
@@ -514,16 +505,14 @@ calc_infect_prob_hunt <- nimbleFunction(
             for (a in 1:n_agef) {
                 p_inf[k, 1, a, t] <- 
                     (1 - exp(-sum(diag(gam[k,
-                                           1,
-                                           yr_start_age[a]:(yr_start_age[a] + length(yr_start_pop[t]:ng_end[t]) - 1),
-                                           yr_start_pop[t]:ng_end[t]])))) * calibration_transition
+                1,
+                yr_start_age[a]:(yr_start_age[a] + length(yr_start_pop[t]:ng_end[t]) - 1)])))) * calibration_transition
             }
             for (a in 1:n_agem) {
                 p_inf[k, 2, a, t] <- 
                     (1 - exp(-sum(diag(gam[k,
-                                           2,
-                                           yr_start_age[a]:(yr_start_age[a] + length(yr_start_pop[t]:ng_end[t]) - 1),
-                                           yr_start_pop[t]:ng_end[t]])))) * calibration_transition
+                2,
+                yr_start_age[a]:(yr_start_age[a] + length(yr_start_pop[t]:ng_end[t]) - 1)])))) * calibration_transition
             }
         }
     }

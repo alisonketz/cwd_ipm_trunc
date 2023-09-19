@@ -75,10 +75,10 @@ Cage[, 2, 7, ] <- 0
 names(df_harv_overall_total)[1] <- "year"
 
 Ototal_east <- df_harv_overall_total[df_harv_overall_total$year > 2016 &
-                                     df_harv_overall_total$study_area == "east",]
+        df_harv_overall_total$study_area == "east",]
 
 Ototal_west <-  df_harv_overall_total[df_harv_overall_total$year > 2016 &
-                                     df_harv_overall_total$study_area == "west",]
+        df_harv_overall_total$study_area == "west",]
 
 Ototal <- array(NA,c(n_study_area,n_sex,nrow(Ototal_east)))
 Ototal[1,,] <- t(Ototal_east[,4:3])
@@ -88,12 +88,13 @@ Ototal[2,,] <- t(Ototal_west[,4:3])
 ### Loading and cleaning harvest compliance rate data
 #####################################################################################
 
-report_df <- suppressWarnings(read_excel("datafiles/ComplianceRate2020.xlsx",sheet=7))
-report_hyp_sum <- apply(report_df[,2:3],2,mean)
+# report_df <- suppressWarnings(read_excel("datafiles/ComplianceRate2022.xlsx",sheet=7))
+report_df <- suppressWarnings(read_excel("datafiles/ComplianceRate2022.xlsx",sheet=12))
+report_df <- report_df[1:8,c(1:4,6)]
+names(report_df)  <- c('Year','compliance_rate',"lower","upper","se")
+report_df <- report_df[report_df$year > 2016,]
 
-report_hyp_all <- unlist(beta.moments(report_hyp_sum[1], report_hyp_sum[2]))
 report_hyp_y <- matrix(NA, nrow(report_df), 2)
-
 for(i in 1:nrow(report_df)){
     report_hyp_y[i,] <- unlist(beta.moments(report_df$compliance_rate[i],report_df$se[i]))
 }
@@ -106,38 +107,39 @@ names(report_hyp_y) <- c("alpha", "beta")
 ###
 #####################################################################################
 
-fawndoe_df <- read.csv(paste0(filepath,"fawndoe_1997_2017.csv"),header = TRUE)
+# fawndoe_df <- read.csv(paste0(filepath,"fawndoe_1997_2017.csv"),header = TRUE)
 
-#calculating overall fawn:doe ratios across all three counties
-fawndoe_df$overall_doe <- fawndoe_df$dane_num_doe +
-                          fawndoe_df$iowa_num_doe +
-                          fawndoe_df$grant_num_doe
-fawndoe_df$overall_fawn <- fawndoe_df$dane_num_fawn +
-                           fawndoe_df$iowa_num_fawn +
-                           fawndoe_df$grant_num_fawn
-fawndoe_df$overall_fd <- fawndoe_df$overall_fawn / fawndoe_df$overall_doe
+# #calculating overall fawn:doe ratios across all three counties
+# fawndoe_df$overall_doe <- fawndoe_df$dane_num_doe +
+#                           fawndoe_df$iowa_num_doe +
+#                           fawndoe_df$grant_num_doe
+# fawndoe_df$overall_fawn <- fawndoe_df$dane_num_fawn +
+#                            fawndoe_df$iowa_num_fawn +
+#                            fawndoe_df$grant_num_fawn
+# fawndoe_df$overall_fd <- fawndoe_df$overall_fawn / fawndoe_df$overall_doe
 
-#Restricting to the years of the study
-fawndoe_df <- fawndoe_df[fawndoe_df$year < 2017, ]
+# #Restricting to the years of the study
+# fawndoe_df <- fawndoe_df[fawndoe_df$year < 2017, ]
 
 #2017-2021
 df_camtrap_fd <- read.csv(paste0(filepath, "Iowa_FDR_2017-2021_with_sd.csv"), header = TRUE)
 
 #reading data from 1992-2015
-fd_older_df <- read_excel(paste0(filepath, "SW_FDR_1992-2015.xlsx"), 1)
-fd_older_df  <- fd_older_df %>% filter(year>1991 & year < 1997)
+# fd_older_df <- read_excel(paste0(filepath, "SW_FDR_1992-2015.xlsx"), 1)
+# fd_older_df  <- fd_older_df %>% filter(year>1991 & year < 1997)
 
-names(fd_older_df) <- c("spatial.unit", "year", "overall_fawn", "overall_doe", "overall_fd")
-for(j in 1:5){
-    fawndoe_df[nrow(fawndoe_df) + 1, ] <- NA
-}
-indx_add <- which(is.na(fawndoe_df$year))
-fawndoe_df$year[indx_add] <- fd_older_df$year
-fawndoe_df$overall_doe[indx_add] <- fd_older_df$overall_doe
-fawndoe_df$overall_fawn[indx_add] <- fd_older_df$overall_fawn
-fawndoe_df$overall_fd[indx_add] <- fd_older_df$overall_fd
-fawndoe_df <- fawndoe_df[order(fawndoe_df$year), ]
-fawndoe_df <- fawndoe_df[fawndoe_df$year > 2016, ]
+# names(fd_older_df) <- c("spatial.unit", "year", "overall_fawn", "overall_doe", "overall_fd")
+# for(j in 1:5){
+#     fawndoe_df[nrow(fawndoe_df) + 1, ] <- NA
+# }
+# indx_add <- which(is.na(fawndoe_df$year))
+# fawndoe_df$year[indx_add] <- fd_older_df$year
+# fawndoe_df$overall_doe[indx_add] <- fd_older_df$overall_doe
+# fawndoe_df$overall_fawn[indx_add] <- fd_older_df$overall_fawn
+# fawndoe_df$overall_fd[indx_add] <- fd_older_df$overall_fd
+# fawndoe_df <- fawndoe_df[order(fawndoe_df$year), ]
+# fawndoe_df <- fawndoe_df[fawndoe_df$year > 2016, ]
+# fawndoe_df <- df_camtrap_fd
 
 ####################################################################################
 ###
@@ -145,7 +147,7 @@ fawndoe_df <- fawndoe_df[fawndoe_df$year > 2016, ]
 ###
 #####################################################################################
 
-df_eab <- read.csv(paste0(filepath,"eab_present.csv"))
+# df_eab <- read.csv(paste0(filepath,"eab_present.csv"))
 
 ####################################################################################
 ###
